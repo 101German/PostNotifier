@@ -45,6 +45,7 @@ namespace PostNotifier.Extensions
             {
                 x.AddConsumer<SubscriptionConsumer>();
                 x.AddConsumer<UnsubscriptionConsumer>();
+                x.AddConsumer<PostCreatingConsumer>();
 
                 x.UsingRabbitMq((context, cfg) =>
                 {
@@ -56,6 +57,11 @@ namespace PostNotifier.Extensions
                     cfg.ReceiveEndpoint("unsubscription-queue", e =>
                     {
                         e.ConfigureConsumer<UnsubscriptionConsumer>(context);
+                    });
+
+                    cfg.ReceiveEndpoint("newpost-queue", e =>
+                    {
+                        e.ConfigureConsumer<PostCreatingConsumer>(context);
                     });
                 });
             });
