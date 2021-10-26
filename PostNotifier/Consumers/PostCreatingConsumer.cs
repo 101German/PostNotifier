@@ -22,26 +22,22 @@ namespace PostNotifier.Consumers
         {
             var subscriptions = await _subscriptionRepository.FindAsync(context.Message.AuthorId);
             var password = Environment.GetEnvironmentVariable("EmailPassword", EnvironmentVariableTarget.User);
-            var FromEmailAdress = Environment.GetEnvironmentVariable("EmailAdress", EnvironmentVariableTarget.User);
+            var fromEmailAdress = Environment.GetEnvironmentVariable("EmailAdress", EnvironmentVariableTarget.User);
 
-            using (MailMessage mailMessage = new MailMessage())
+            using MailMessage mailMessage = new();
+            mailMessage.From = new MailAddress(fromEmailAdress, "PoemPost");
+
+            foreach (var emailAdress in subscriptions.Select(s => s.Email))
             {
-                mailMessage.From = new MailAddress(FromEmailAdress, "PoemPost");
-
-                foreach (var emailAdress in subscriptions.Select(s => s.Email))
-                {
-                    mailMessage.To.Add(emailAdress);
-                }
-                mailMessage.Subject = "New Post!";
-                mailMessage.Body = $"{context.Message.AuthorName} has a new post!";
-
-                using (SmtpClient smtp = new SmtpClient("smtp.gmail.com", 587) )
-                {
-                    smtp.Credentials = new NetworkCredential(FromEmailAdress, password);
-                    smtp.EnableSsl = true;
-                    await smtp.SendMailAsync(mailMessage);
-                }
+                mailMessage.To.Add(emailAdress);
             }
+            mailMessage.Subject = "New Post!";
+            mailMessage.Body = $"{context.Message.AuthorName} has a new post!";
+
+            using SmtpClient smtp = new("smtp.gmail.com", 587);
+            smtp.Credentials = new NetworkCredential(fromEmailAdress, password);
+            smtp.EnableSsl = true;
+            await smtp.SendMailAsync(mailMessage);
         }
     }
 }
