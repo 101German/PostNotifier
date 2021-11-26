@@ -1,17 +1,10 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using PostNotifier.Extensions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace PostNotifier
 {
@@ -29,7 +22,6 @@ namespace PostNotifier
         {
             services.ConfigureDatabaseSettings(Configuration);
             services.ConfigureRepositories();
-            services.ConfigureAutoMapper();
             services.ConfigureMassTransit();
             services.AddControllers();
             services.AddSwaggerGen(c =>
