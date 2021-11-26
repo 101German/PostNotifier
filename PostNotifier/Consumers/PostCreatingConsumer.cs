@@ -1,38 +1,33 @@
 ﻿using MassTransit;
-using PoemPost.Data.DTO;
-using PostNotifier.Contracts;
+using Models;
 using System;
-using System.Linq;
 using System.Net;
 using System.Net.Mail;
 using System.Threading.Tasks;
 
 namespace PostNotifier.Consumers
 {
-    public class PostCreatingConsumer : IConsumer<PostDTO>
+    public class PostCreatingConsumer : IConsumer<UsersForNotify>
     {
-        private readonly ISubscriptionRepository _subscriptionRepository;
-
-        public PostCreatingConsumer(ISubscriptionRepository subscriptionRepository)
+        public PostCreatingConsumer()
         {
-            _subscriptionRepository = subscriptionRepository;
+           
         }
 
-        public async Task Consume(ConsumeContext<PostDTO> context)
+        public async Task Consume(ConsumeContext<UsersForNotify> context)
         {
-            var subscriptions = await _subscriptionRepository.FindAsync(context.Message.AuthorId);
             var password = Environment.GetEnvironmentVariable("EmailPassword", EnvironmentVariableTarget.User);
             var fromEmailAdress = Environment.GetEnvironmentVariable("EmailAdress", EnvironmentVariableTarget.User);
 
             using MailMessage mailMessage = new();
             mailMessage.From = new MailAddress(fromEmailAdress, "PoemPost");
 
-            foreach (var emailAdress in subscriptions.Select(s => s.Email))
+            foreach (var emailAdress in context.Message.UsersEmails)
             {
                 mailMessage.To.Add(emailAdress);
             }
             mailMessage.Subject = "New Post!";
-            mailMessage.Body = $"{context.Message.AuthorName} has a new post!";
+            mailMessage.Body = $"{context.Message.AuthorName} has a new post {context.Message.PoemName}!";
 
             using SmtpClient smtp = new("smtp.gmail.com", 587);
             smtp.Credentials = new NetworkCredential(fromEmailAdress, password);
